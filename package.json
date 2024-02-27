@@ -9,7 +9,6 @@
     "url": "holymos/eslint-config-holymos"
   },
   "peerDependencies": {
-    "eslint": "^8.54.0",
     "typescript": ">=5"
   },
   "peerDependenciesMeta": {
@@ -17,16 +16,21 @@
       "optional": true
     }
   },
+  "bin": {
+    "init": "./init.js"
+  },
   "dependencies": {
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-jsx-a11y": "^6.8.0",
     "eslint-plugin-n": "^16.3.1",
     "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.1.0",
     "eslint": "^8.54.0",
-    "eslint-config-prettier": "^9.0.0"
+    "eslint-config-prettier": "^9.0.0",
+    "js-yaml": "^4.1.0"
   },
   "devDependencies": {
     "@types/inquirer": "^9.0.7",

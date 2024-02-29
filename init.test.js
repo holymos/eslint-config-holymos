@@ -19,7 +19,6 @@ jest.mock("colors", () => ({
   red: jest.fn((msg) => `red(${msg})`),
 }));
 jest.mock("js-yaml");
-jest.mock("inquirer");
 jest.mock("child_process");
 
 console.log = jest.fn();
@@ -147,7 +146,7 @@ describe("init", () => {
     it("should not update config if @holymos/eslint-config is already included", async () => {
       fs.existsSync.mockImplementation((path) => path === ".prettierrc.json");
       fs.readFileSync.mockReturnValue(
-        JSON.stringify({ plugins: ["@holymos/eslint-config"] }),
+        JSON.stringify({ plugins: ["prettier-plugin-tailwindcss"] }),
       );
       await createPrettierrc();
       expect(fs.writeFileSync).not.toHaveBeenCalled();

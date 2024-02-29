@@ -9,6 +9,7 @@
     "url": "holymos/eslint-config-holymos"
   },
   "scripts": {
+    "lint": "eslint .",
     "test": "jest"
   },
   "peerDependencies": {

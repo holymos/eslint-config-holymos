@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
-const { execSync, exec } = require("child_process");
+const { execSync } = require("child_process");
 const colors = require("colors");
 const fs = require("fs");
 const inquirer = require("inquirer");
 const yaml = require("js-yaml");
+const merge = require("lodash.merge");
 const path = require("path");
 
 const parseJsModule = (code) => {
@@ -182,15 +183,59 @@ const createPrettierrc = async () => {
 };
 
 const createVsCodeSettings = () => {
-  const scriptPath = path.join(__dirname, "create_vscode_settings.sh");
+  const projectDir = process.cwd();
 
-  exec(scriptPath, (error, stdout) => {
-    if (error) {
-      console.error(colors.red(`Execution error: ${error}`));
-      return;
-    }
-    console.log(`stdout: ${stdout}`);
-  });
+  const vscodeDir = path.join(projectDir, ".vscode");
+  console.log(vscodeDir);
+  const settingsPath = path.join(vscodeDir, "settings.json");
+  console.log(settingsPath);
+
+  // Create the .vscode directory if it doesn't exist
+  if (!fs.existsSync(vscodeDir)) {
+    console.log("Creating .vscode directory");
+    fs.mkdirSync(vscodeDir);
+  }
+
+  const newSettings = {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "always",
+    },
+    "[html]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+    },
+    "[css]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+    },
+    "[json]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+    },
+    "[jsonc]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+    },
+  };
+
+  let settings = {};
+
+  let settingsFileExists = false;
+  if (fs.existsSync(settingsPath)) {
+    console.log("Settings file exists");
+    settingsFileExists = true;
+    const existingSettings = JSON.parse(fs.readFileSync(settingsPath, "utf8"));
+    console.log("Existing settings", existingSettings);
+    settings = merge(existingSettings, newSettings);
+
+    console.log("Merged settings", settings);
+  } else {
+    settings = newSettings;
+    console.log("New settings", settings);
+  }
+
+  fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
+
+  console.log(
+    `The .vscode/settings.json file has been ${settingsFileExists ? "updated" : "created"}.`,
+  );
 };
 
 const init = async () => {

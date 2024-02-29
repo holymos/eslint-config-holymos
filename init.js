@@ -9,9 +9,13 @@ const merge = require("lodash.merge");
 const path = require("path");
 
 const parseJsModule = (code) => {
-  const module = { exports: {} };
-  eval(code);
-  return module.exports;
+  try {
+    return JSON.parse(code);
+  } catch (error) {
+    const module = { exports: {} };
+    eval(code);
+    return module.exports;
+  }
 };
 
 const installDependencies = async (packageManager, packageName) => {
@@ -35,7 +39,7 @@ const installDependencies = async (packageManager, packageName) => {
       break;
 
     default:
-      execSync(`npm install --save-dev eslint ${packageName}`, {
+      execSync(`npm install --save-dev ${packageName}`, {
         stdio: "inherit",
       });
   }
@@ -56,13 +60,13 @@ async function updateEslintConfig(projectChoice) {
     { file: ".eslintrc.json", parser: JSON.parse, stringifier: JSON.stringify },
     {
       file: ".eslintrc.yaml",
-      parser: yaml.safeLoad,
-      stringifier: yaml.safeDump,
+      parser: yaml.load,
+      stringifier: yaml.dump,
     },
     {
       file: ".eslintrc.yml",
-      parser: yaml.safeLoad,
-      stringifier: yaml.safeDump,
+      parser: yaml.load,
+      stringifier: yaml.dump,
     },
     { file: "package.json", parser: JSON.parse, stringifier: JSON.stringify },
   ];
@@ -75,10 +79,12 @@ async function updateEslintConfig(projectChoice) {
       config = parser(fileContent);
 
       if (file === "package.json") {
+        const regex = /@holymos\/eslint-config\/(react|node|next)/;
+
         if (
           !config.eslintConfig ||
           (config.eslintConfig.extends &&
-            config.eslintConfig.extends.contains("@holymos/eslint-config"))
+            config.eslintConfig.extends.some((value) => regex.test(value)))
         )
           break;
 
@@ -113,7 +119,12 @@ async function updateEslintConfig(projectChoice) {
 const createPrettierrc = async () => {
   const configFiles = [
     {
-      file: ".prettierrc.js",
+      file: ".prettierrc",
+      parser: parseJsModule,
+      stringifier: JSON.stringify,
+    },
+    {
+      file: ".prettierrc.cjs",
       parser: parseJsModule,
       stringifier: JSON.stringify,
     },
@@ -129,13 +140,13 @@ const createPrettierrc = async () => {
     },
     {
       file: ".prettierrc.yaml",
-      parser: yaml.safeLoad,
-      stringifier: yaml.safeDump,
+      parser: yaml.load,
+      stringifier: yaml.dump,
     },
     {
       file: ".prettierrc.yml",
-      parser: yaml.safeLoad,
-      stringifier: yaml.safeDump,
+      parser: yaml.load,
+      stringifier: yaml.dump,
     },
     { file: "package.json", parser: JSON.parse, stringifier: JSON.stringify },
   ];
@@ -149,9 +160,9 @@ const createPrettierrc = async () => {
 
       if (file === "package.json") {
         if (
-          !file.prettier ||
+          !config.prettier ||
           (config.prettier.plugins &&
-            config.prettier.plugins.contains("@holymos/eslint-config"))
+            config.prettier.plugins.includes("prettier-plugin-tailwindcss"))
         )
           break;
 
@@ -160,7 +171,10 @@ const createPrettierrc = async () => {
 
         config.prettier.plugins.push("prettier-plugin-tailwindcss");
       } else {
-        if (config.plugins && config.plugins.contains("@holymos/eslint-config"))
+        if (
+          config.plugins &&
+          config.plugins.includes("prettier-plugin-tailwindcss")
+        )
           return;
 
         config.plugins = config.plugins || [];
@@ -186,13 +200,11 @@ const createVsCodeSettings = () => {
   const projectDir = process.cwd();
 
   const vscodeDir = path.join(projectDir, ".vscode");
-  console.log(vscodeDir);
+
   const settingsPath = path.join(vscodeDir, "settings.json");
-  console.log(settingsPath);
 
   // Create the .vscode directory if it doesn't exist
   if (!fs.existsSync(vscodeDir)) {
-    console.log("Creating .vscode directory");
     fs.mkdirSync(vscodeDir);
   }
 
@@ -219,16 +231,12 @@ const createVsCodeSettings = () => {
 
   let settingsFileExists = false;
   if (fs.existsSync(settingsPath)) {
-    console.log("Settings file exists");
     settingsFileExists = true;
     const existingSettings = JSON.parse(fs.readFileSync(settingsPath, "utf8"));
-    console.log("Existing settings", existingSettings);
-    settings = merge(existingSettings, newSettings);
 
-    console.log("Merged settings", settings);
+    settings = merge(existingSettings, newSettings);
   } else {
     settings = newSettings;
-    console.log("New settings", settings);
   }
 
   fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
@@ -292,4 +300,15 @@ const init = async () => {
   }
 };
 
-init();
+if (require.main === module) {
+  init();
+}
+
+module.exports = {
+  parseJsModule,
+  installDependencies,
+  updateEslintConfig,
+  createPrettierrc,
+  createVsCodeSettings,
+  init,
+};

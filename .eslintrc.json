@@ -5,12 +5,7 @@
     "jest": true
   },
   "extends": ["eslint:recommended", "prettier"],
-  "plugins": [
-    "react",
-    "@typescript-eslint",
-    "prettier",
-    "eslint-plugin-import-helpers"
-  ],
+  "plugins": ["prettier", "eslint-plugin-import-helpers"],
   "overrides": [],
   "parserOptions": {
     "ecmaVersion": "latest",

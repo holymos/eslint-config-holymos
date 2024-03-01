@@ -3,10 +3,10 @@
 const { execSync } = require("child_process");
 const colors = require("colors");
 const fs = require("fs");
-const inquirer = require("inquirer");
 const yaml = require("js-yaml");
 const merge = require("lodash.merge");
 const path = require("path");
+const prompts = require("prompts");
 
 const parseJsModule = (code) => {
   try {
@@ -248,51 +248,53 @@ const createVsCodeSettings = () => {
 
 const init = async () => {
   try {
-    const { configChoice: packageManagerChoice } = await inquirer.prompt([
-      {
-        type: "list",
-        name: "configChoice",
-        message: "Which package you want to use?",
-        choices: ["npm", "pnpm", "yarn"],
-      },
-    ]);
-    const { configChoice: projectChoice } = await inquirer.prompt([
-      {
-        type: "list",
-        name: "configChoice",
-        message: "Which config do you want to use?",
-        choices: ["node", "react", "next"],
-      },
-    ]);
-    const { configChoice: tailwindChoice } = await inquirer.prompt([
-      {
-        type: "list",
-        name: "configChoice",
-        message: "Are you using Tailwind CSS?",
-        choices: ["yes", "no"],
-      },
-    ]);
-    const { configChoice: autoFormatChoice } = await inquirer.prompt([
-      {
-        type: "list",
-        name: "configChoice",
-        message: "Do you want to auto format your code?",
-        choices: ["yes", "no"],
-      },
-    ]);
-
-    const useTailwindConfig = tailwindChoice === "yes";
-
-    const useVsCodeSettings = autoFormatChoice === "yes";
+    const { packageManagerChoice } = await prompts({
+      type: "select",
+      name: "packageManagerChoice",
+      message: "Which package managerdo  you want to use?",
+      choices: [
+        { title: "npm", value: "npm" },
+        { title: "pnpm", value: "pnpm" },
+        { title: "yarn", value: "yarn" },
+      ],
+    });
+    const { projectChoice } = await prompts({
+      type: "select",
+      name: "projectChoice",
+      message: "Which project do you want to config?",
+      choices: [
+        { title: "react", value: "react" },
+        { title: "next", value: "next" },
+        { title: "node", value: "node" },
+      ],
+    });
+    const { tailwindChoice } = await prompts({
+      type: "select",
+      name: "tailwindChoice",
+      message: "Do you use Tailwind CSS in your project?",
+      choices: [
+        { title: "yes", value: true },
+        { title: "no", value: false },
+      ],
+    });
+    const { autoFormatChoice } = await prompts({
+      type: "select",
+      name: "autoFormatChoice",
+      message: "Do you want to auto format your code?",
+      choices: [
+        { title: "yes", value: true },
+        { title: "no", value: false },
+      ],
+    });
 
     const packagesList = ["@holymos/eslint-config"];
-    if (useTailwindConfig) packagesList.push("prettier-plugin-tailwindcss");
+    if (tailwindChoice) packagesList.push("prettier-plugin-tailwindcss");
 
     await installDependencies(packageManagerChoice, packagesList.join(" "));
     await updateEslintConfig(projectChoice);
 
-    if (useTailwindConfig) createPrettierrc(packageManagerChoice);
-    if (useVsCodeSettings) createVsCodeSettings();
+    if (tailwindChoice) createPrettierrc(packageManagerChoice);
+    if (autoFormatChoice) createVsCodeSettings();
   } catch (error) {
     console.log("\n", colors.red(error.message));
     console.log("\n-----------------\n");

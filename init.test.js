@@ -1,8 +1,8 @@
 const { execSync } = require("child_process");
 const colors = require("colors");
 const fs = require("fs");
-const inquirer = require("inquirer");
 const path = require("path");
+const prompts = require("prompts");
 
 const {
   init,
@@ -20,6 +20,7 @@ jest.mock("colors", () => ({
 }));
 jest.mock("js-yaml");
 jest.mock("child_process");
+jest.mock("prompts");
 
 console.log = jest.fn();
 
@@ -190,17 +191,17 @@ describe("init", () => {
     });
 
     it("should run without errors", async () => {
-      inquirer.prompt.mockResolvedValueOnce({ configChoice: "npm" });
-      inquirer.prompt.mockResolvedValueOnce({ configChoice: "react" });
-      inquirer.prompt.mockResolvedValueOnce({ configChoice: "yes" });
-      inquirer.prompt.mockResolvedValueOnce({ configChoice: "yes" });
+      prompts.prompt.mockResolvedValueOnce({ configChoice: "npm" });
+      prompts.prompt.mockResolvedValueOnce({ configChoice: "react" });
+      prompts.prompt.mockResolvedValueOnce({ configChoice: "yes" });
+      prompts.prompt.mockResolvedValueOnce({ configChoice: "yes" });
 
       await init();
-      expect(inquirer.prompt).toHaveBeenCalledTimes(4);
+      expect(prompts.prompt).toHaveBeenCalledTimes(4);
     });
 
     it("should handle errors", async () => {
-      inquirer.prompt.mockRejectedValue(new Error("Test error"));
+      prompts.prompt.mockRejectedValue(new Error("Test error"));
       await init();
       expect(console.log).toHaveBeenCalledWith("\n", colors.red("Test error"));
     });

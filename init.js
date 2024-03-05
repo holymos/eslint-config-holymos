@@ -84,9 +84,18 @@ async function updateEslintConfig(projectChoice) {
         if (
           !config.eslintConfig ||
           (config.eslintConfig.extends &&
+            Array.isArray(config.eslintConfig.extends) &&
             config.eslintConfig.extends.some((value) => regex.test(value)))
         )
           break;
+
+        if (
+          config.eslintConfig &&
+          config.eslintConfig.extends &&
+          !Array.isArray(config.eslintConfig.extends)
+        ) {
+          config.eslintConfig.extends = [config.eslintConfig.extends];
+        }
 
         config.eslintConfig.extends = config.eslintConfig.extends || [];
         config.eslintConfig.extends.push(
@@ -94,8 +103,16 @@ async function updateEslintConfig(projectChoice) {
         );
       } else {
         const regex = /@holymos\/eslint-config\/(react|node|next)/;
-        if (config.extends && config.extends.some((value) => regex.test(value)))
+        if (
+          config.extends &&
+          Array.isArray(config.extends) &&
+          config.extends.some((value) => regex.test(value))
+        )
           return;
+
+        if (config.extends && !Array.isArray(config.extends)) {
+          config.extends = [config.extends];
+        }
 
         config.extends = config.extends || [];
         config.extends.push(`@holymos/eslint-config/${projectChoice}`);
@@ -166,6 +183,14 @@ const createPrettierrc = async () => {
         )
           break;
 
+        if (
+          config.prettier &&
+          config.prettier.plugins &&
+          !Array.isArray(config.prettier.plugins)
+        ) {
+          config.prettier.plugins = [config.prettier.plugins];
+        }
+
         config.prettier = config.prettier || {};
         config.prettier.plugins = config.prettier.plugins || [];
 
@@ -176,6 +201,10 @@ const createPrettierrc = async () => {
           config.plugins.includes("prettier-plugin-tailwindcss")
         )
           return;
+
+        if (config.plugins && !Array.isArray(config.plugins)) {
+          config.plugins = [config.plugins];
+        }
 
         config.plugins = config.plugins || [];
         config.plugins.push("prettier-plugin-tailwindcss");

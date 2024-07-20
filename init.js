@@ -160,21 +160,19 @@ async function updateEslintConfig(projectChoice, typescriptChoice) {
         config.extends = config.extends || [];
         config.extends.push(`@holymos/eslint-config/${projectChoice}`);
 
-        if (
-          config.eslintConfig &&
-          config.eslintConfig.plugins &&
-          !Array.isArray(config.eslintConfig.plugins)
-        ) {
-          config.eslintConfig.plugins = [config.eslintConfig.plugins];
+        if (config.plugins && !Array.isArray(config.plugins)) {
+          config.plugins = [config.plugins];
         }
 
+        config.plugins = config.plugins || [];
+
         if (typescriptChoice) {
-          console.log('typescriptChoice');
-          config.eslintConfig.extends.push(
-            'plugin:@typescript-eslint/recommended',
-          );
-          config.eslintConfig.parser = '@typescript-eslint/parser';
-          config.eslintConfig.plugins.push('@typescript-eslint');
+          config.extends.push('plugin:@typescript-eslint/recommended');
+          console.log('extends ok');
+          config.parser = '@typescript-eslint/parser';
+          console.log('parser ok');
+          config.plugins.push('@typescript-eslint');
+          console.log('plugins ok');
         }
       }
 
@@ -337,35 +335,59 @@ const createVsCodeSettings = () => {
 
 const init = async () => {
   try {
-    const { packageManagerChoice } = await prompts({
-      type: 'select',
-      name: 'packageManagerChoice',
-      message: 'Which package manager do  you want to use?',
-      choices: [
-        { title: 'npm', value: 'npm' },
-        { title: 'pnpm', value: 'pnpm' },
-        { title: 'yarn', value: 'yarn' },
-      ],
-    });
-    const { projectChoice } = await prompts({
-      type: 'select',
-      name: 'projectChoice',
-      message: 'Which project do you want to config?',
-      choices: [
-        { title: 'react', value: 'react' },
-        { title: 'next', value: 'next' },
-        { title: 'node', value: 'node' },
-      ],
-    });
-    const { typescriptChoice } = await prompts({
-      type: 'select',
-      name: 'typescriptChoice',
-      message: 'Do you use TypeScript in your project?',
-      choices: [
-        { title: 'yes', value: true },
-        { title: 'no', value: false },
-      ],
-    });
+    const { packageManagerChoice } = await prompts(
+      {
+        type: 'select',
+        name: 'packageManagerChoice',
+        message: 'Which package manager do  you want to use?',
+        choices: [
+          { title: 'npm', value: 'npm' },
+          { title: 'pnpm', value: 'pnpm' },
+          { title: 'yarn', value: 'yarn' },
+        ],
+      },
+      {
+        onCancel: () => {
+          console.log('Operation cancelled by the user.');
+          process.exit(1);
+        },
+      },
+    );
+    const { projectChoice } = await prompts(
+      {
+        type: 'select',
+        name: 'projectChoice',
+        message: 'Which project do you want to config?',
+        choices: [
+          { title: 'react', value: 'react' },
+          { title: 'next', value: 'next' },
+          { title: 'node', value: 'node' },
+        ],
+      },
+      {
+        onCancel: () => {
+          console.log('Operation cancelled by the user.');
+          process.exit(1);
+        },
+      },
+    );
+    const { typescriptChoice } = await prompts(
+      {
+        type: 'select',
+        name: 'typescriptChoice',
+        message: 'Do you use TypeScript in your project?',
+        choices: [
+          { title: 'yes', value: true },
+          { title: 'no', value: false },
+        ],
+      },
+      {
+        onCancel: () => {
+          console.log('Operation cancelled by the user.');
+          process.exit(1);
+        },
+      },
+    );
 
     let projectUsesTailwind;
     if (['react', 'next'].includes(projectChoice)) {
@@ -381,15 +403,23 @@ const init = async () => {
 
       projectUsesTailwind = tailwindChoice;
     }
-    const { autoFormatChoice } = await prompts({
-      type: 'select',
-      name: 'autoFormatChoice',
-      message: 'Do you want to auto format your code?',
-      choices: [
-        { title: 'yes', value: true },
-        { title: 'no', value: false },
-      ],
-    });
+    const { autoFormatChoice } = await prompts(
+      {
+        type: 'select',
+        name: 'autoFormatChoice',
+        message: 'Do you want to auto format your code?',
+        choices: [
+          { title: 'yes', value: true },
+          { title: 'no', value: false },
+        ],
+      },
+      {
+        onCancel: () => {
+          console.log('Operation cancelled by the user.');
+          process.exit(1);
+        },
+      },
+    );
 
     const packagesList = ['@holymos/eslint-config'];
     if (projectUsesTailwind) packagesList.push('prettier-plugin-tailwindcss');

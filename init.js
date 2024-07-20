@@ -168,11 +168,8 @@ async function updateEslintConfig(projectChoice, typescriptChoice) {
 
         if (typescriptChoice) {
           config.extends.push('plugin:@typescript-eslint/recommended');
-          console.log('extends ok');
           config.parser = '@typescript-eslint/parser';
-          console.log('parser ok');
           config.plugins.push('@typescript-eslint');
-          console.log('plugins ok');
         }
       }
 
